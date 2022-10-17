@@ -33,24 +33,25 @@ class BinaryParser():
         else: n = 4
         return n
 
+    def __c_bytes(self, format):
+        count = 0
+        for f in format:
+            count += self.__n_bytes(f["len"])
+        return count
+
     def encode(self, object: dict, format: list):
 
         data = bytearray()
-
+        
         i = 0
         for item in object.values(): 
             n_bytes = self.__n_bytes(format[i]["len"])
             value = int(item).to_bytes(n_bytes, byteorder="big")
-            data += value 
+            data += value
+
             i += 1
         self.buffer = data
-        
-        count = 0
-        for f in format:
-            if f["type"] == "int" or f["type"] == "uint":
-                count += f["len"]
-            elif f["type"] == "float":
-                    count += 32 
+        count = self.__c_bytes(format) * 8
         self.size = count
     
    
