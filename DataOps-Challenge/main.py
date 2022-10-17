@@ -1,4 +1,3 @@
-from array import array
 from binascii import hexlify
 
 class BinaryParser():
@@ -13,25 +12,39 @@ class BinaryParser():
         return self.size
 
     def decode(self, trama: bytearray, format: list):
-        # Deserializar trama en Array
-        data = array("h")
-        data.frombytes(trama)
-        # Deserializar en Object
+ 
         _object = {}
         i = 0
         for f in format:
-            _object[f["tag"]] = data[i]
-            i += 1            
+           
+            n_bytes = self.__n_bytes(f["len"])
+            value = bytearray()
+           
+            value = trama[i:(i+n_bytes)]
+                
+            _object[f["tag"]] = int.from_bytes(value, byteorder="big")
+            i += n_bytes            
 
         return _object
 
+    def __n_bytes(self, len):
+        if len <= 8: n = 1
+        elif len <= 16: n =2
+        else: n = 4
+        return n
+
     def encode(self, object: dict, format: list):
-        # Serializar oject
-        data = array("h")
-        for item in object.values():  # Me quedo sólo con los valores y los ingreso en un array
-            data.append(int(item)) # Me aseguro de que sean enteros 
-        self.buffer = data.tobytes()
-        # Obtener tamaño en bits
+
+        data = bytearray()
+
+        i = 0
+        for item in object.values(): 
+            n_bytes = self.__n_bytes(format[i]["len"])
+            value = int(item).to_bytes(n_bytes, byteorder="big")
+            data += value 
+            i += 1
+        self.buffer = data
+        
         count = 0
         for f in format:
             if f["type"] == "int" or f["type"] == "uint":
@@ -40,7 +53,7 @@ class BinaryParser():
                     count += 32 
         self.size = count
     
-
+   
 
 if __name__ == "__main__":
     # Ejemplos
