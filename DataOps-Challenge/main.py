@@ -18,9 +18,12 @@ class BinaryParser():
         data.frombytes(trama)
         # Deserializar en Object
         _object = {}
+        i = 0
+        for f in format:
+            _object[f["tag"]] = data[i]
+            i += 1            
 
-
-        return data
+        return _object
 
     def encode(self, object: dict, format: list):
         # Serializar oject
