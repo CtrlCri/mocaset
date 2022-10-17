@@ -12,21 +12,57 @@ class BinaryParser():
         return self.size
 
     def decode(self, trama: bytearray, format: list):
- 
-        _object = {}
+        """
+        Decode
+
+        This method decodes/deserializes a given frame; 
+        convert a binary object to a dictionary object.
+
+        Parameters: 
+            - trama: bytearray, frame to deserialize
+            - format: list, serialization format
+    
+        Returns a object: 
+            - object: dictionary, "composition" 
+            (frame deserialized into tag = value fields)
+        """ 
+        object = {}
         i = 0
-        for f in format:
-           
-            n_bytes = self.__n_bytes(f["len"])
+        for f in format:           
+            n_bytes = self.__n_bytes(f["len"]) # call to a function to calculate number of bytes
             value = bytearray()
-           
-            value = trama[i:(i+n_bytes)]
-                
-            _object[f["tag"]] = int.from_bytes(value, byteorder="big")
-            i += n_bytes            
+            value = trama[i:(i+n_bytes)] # takes the part of the frame that corresponds to the value in question
+            object[f["tag"]] = int.from_bytes(value, byteorder="big") # decode value
+            i += n_bytes # move frame index           
 
-        return _object
+        return object
 
+    def encode(self, object: dict, format: list):
+        """
+        Encode
+
+        This method encodes/serializes a given frame;
+          convert a dictionary object to a binary object.
+
+        Parameters: 
+            - object: dictionary 
+            - format: list, serialization format
+    
+        Setter-method: 
+            - _self.buffer: bytearray, frame serialized 
+            - _self.size: int, frame bit size
+        """ 
+        data = bytearray()
+        i = 0
+        for item in object.values(): 
+            n_bytes = self.__n_bytes(format[i]["len"]) # call to a function to calculate number of bytes
+            value = int(item).to_bytes(n_bytes, byteorder="big") # code value
+            data += value # add binary data
+            i += 1
+        self.buffer = data # add binary data to buffer
+        count = self.__c_bytes(format) * 8 # calculate bits
+        self.size = count # add bit count to frame size
+    
     def __n_bytes(self, len):
         if len <= 8: n = 1
         elif len <= 16: n =2
@@ -37,23 +73,7 @@ class BinaryParser():
         count = 0
         for f in format:
             count += self.__n_bytes(f["len"])
-        return count
-
-    def encode(self, object: dict, format: list):
-
-        data = bytearray()
-        
-        i = 0
-        for item in object.values(): 
-            n_bytes = self.__n_bytes(format[i]["len"])
-            value = int(item).to_bytes(n_bytes, byteorder="big")
-            data += value
-
-            i += 1
-        self.buffer = data
-        count = self.__c_bytes(format) * 8
-        self.size = count
-    
+        return count    
    
 
 if __name__ == "__main__":
