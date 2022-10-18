@@ -108,16 +108,25 @@ if __name__ == "__main__":
     "var4.value": 222, "var5.value": 2255,"var6.value": 2.2, "var7.value": 3150, 
     "var8.value": 111125, "var9.value": 147}
 
+    other_data = { "V0": 1, "V1": 2, "V2": 3 }
+    other_format = [
+        { "tag": "v0", "type": "int", "len": 8 },
+        { "tag": "v1", "type": "int", "len": 8 },
+        { "tag": "v2", "type": "int", "len": 8 }
+        ]    
+
 
     # Encode
     bp = BinaryParser()
     
-    data, format = data_1, format_1 # test1
-    #data, format = data_2, format_2 # test2
+    #data, format = data_1, format_1 # example
+    #data, format = data_2, format_2 # example
+    data, format = other_data, other_format # other example
+
 
     bp.encode(data, format)
     data_encoded = bp.get_buffer()
-    print(data_encoded)
+    #print(data_encoded)
     print(hexlify(data_encoded))
     print(bp.get_size())
     # Decode
