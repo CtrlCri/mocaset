@@ -44,8 +44,10 @@ class BinaryParser():
             elif f["type"] == "float": # different procedure if float 
                 n_bytes = 4
                 value = trama[i:(i+n_bytes)]               
-                object[f["tag"]] = struct.unpack("f", value) # decode value 
-
+                try:
+                    object[f["tag"]] = struct.unpack("f", value) # decode value 
+                except struct.error: 
+                    print("The frame is limited to 32 bytes")
             elif f["type"] == "char": # different procedure if char                  
                 n_bytes = 1
                 value = trama[i:(i+n_bytes)]               
@@ -158,6 +160,22 @@ if __name__ == "__main__":
     ]
     data_4 = {"Initial.LastName": "A", "Age": 39, "Salary": 1411.9}
 
+    format_5 = [
+        { "tag": "var0.Temp_C_2_Avg", "type": "float" },
+        { "tag": "var0.DOppm", "type": "float" },
+        { "tag": "var0.TurbNTU", "type": "float" },
+        { "tag": "var0.Lvl_corr_Avg", "type": "float" },
+        { "tag": "var0.Cond_Avg", "type": "float" },
+        { "tag": "var0.pH_Avg", "type": "float" },
+        { "tag": "var0.TimeStamp", "type": "float" },
+        { "tag": "var0.BattV_Avg", "type": "float" },
+        { "tag": "var0.BattV_Min", "type": "float" },
+        { "tag": "var1.Temp_C_2_Avg", "type": "float" }
+        ] #until 32Bytes
+    data_5 = { "var0.Temp_C_2_Avg": 2.5, "var0.DOppm": 3.5, "var0.TurbNTU": 1.5,"var0.Lvl_corr_Avg": 2.5, 
+    "var0.pH_Avg": 0.5, "var0.TimeStamp": 5.5,"var0.BattV_Avg": 4.5, "var0.BattV_Min": 3.5,
+    "var0.BattV_Min": 6.2, "var1.Temp_C_2_Avg": 7.4}
+
     other_data = { "V0": 1, "V1": 2, "V2": 3 }
     other_format = [
         { "tag": "V0", "type": "int", "len": 8 },
@@ -172,7 +190,8 @@ if __name__ == "__main__":
     #data, format = data_1, format_1 # example
     #data, format = data_2, format_2 # example
     #data, format = data_3, format_3 # example
-    data, format = data_4, format_4 # example mix
+    #data, format = data_4, format_4 # example mix
+    data, format = data_5, format_5 # example with struct.error
 
     #data, format = other_data, other_format # other example
 
