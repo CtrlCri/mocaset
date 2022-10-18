@@ -36,9 +36,10 @@ class BinaryParser():
                 n_bytes = self.__n_bytes(f["len"]) # call to a function to calculate number of bytes
                 value = trama[i:(i+n_bytes)] # takes the part of the frame that corresponds to the value in question
                 object[f["tag"]] = int.from_bytes(value, byteorder="big") # decode value
+                
             elif f["type"] == "float": # different procedure if float 
-                value = trama[i:(i+4)] 
-                object[f["tag"]] = struct.unpack("f", value) # decode value
+                value = trama[i:(i+4)]               
+                object[f["tag"]] = struct.unpack("f", value) # decode value               
                 n_bytes = 4
             
             i += n_bytes # move frame index           
@@ -115,12 +116,25 @@ if __name__ == "__main__":
     data_2 = { "var0.value": 2, "var1.value": 3, "var2.value": 1,"var3.value": 255, 
     "var4.value": 222, "var5.value": 2255,"var6.value": 2.2, "var7.value": 3150, 
     "var8.value": 111125, "var9.value": 147}
+      
+    format_3 = [
+        { "tag": "var0.Temp_C_2_Avg", "type": "float" },
+        { "tag": "var0.DOppm", "type": "float" },
+        { "tag": "var0.TurbNTU", "type": "float" },
+        { "tag": "var0.Lvl_corr_Avg", "type": "float" },
+        { "tag": "var0.Cond_Avg", "type": "float" },
+        { "tag": "var0.pH_Avg", "type": "float" },
+        { "tag": "var0.TimeStamp", "type": "float" },
+        { "tag": "var0.BattV_Avg", "type": "float" }
+        ] #until 32Bytes
+    data_3 = { "var0.Temp_C_2_Avg": 2.5, "var0.DOppm": 3.5, "var0.TurbNTU": 1.5,"var0.Lvl_corr_Avg": 2.5, 
+    "var0.pH_Avg": 0.5, "var0.TimeStamp": 5.5,"var0.BattV_Avg": 4.5, "var0.BattV_Min": 3.5}
 
     other_data = { "V0": 1, "V1": 2, "V2": 3 }
     other_format = [
-        { "tag": "v0", "type": "int", "len": 8 },
-        { "tag": "v1", "type": "int", "len": 8 },
-        { "tag": "v2", "type": "int", "len": 8 }
+        { "tag": "V0", "type": "int", "len": 8 },
+        { "tag": "V1", "type": "int", "len": 8 },
+        { "tag": "V2", "type": "int", "len": 8 }
         ]    
 
 
@@ -128,7 +142,8 @@ if __name__ == "__main__":
     bp = BinaryParser()
     
     #data, format = data_1, format_1 # example
-    data, format = data_2, format_2 # example
+    #data, format = data_2, format_2 # example
+    data, format = data_3, format_3 # example
     #data, format = other_data, other_format # other example
 
 
