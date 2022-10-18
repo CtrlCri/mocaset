@@ -29,7 +29,9 @@ class BinaryParser():
         object = {}
         i = 0
         for f in format:           
-            n_bytes = self.__n_bytes(f["len"]) # call to a function to calculate number of bytes
+            if f["type"] == "int" or f["type"] == "uint":
+                n_bytes = self.__n_bytes(f["len"]) # call to a function to calculate number of bytes
+            else: n_bytes = 4
             value = bytearray()
             value = trama[i:(i+n_bytes)] # takes the part of the frame that corresponds to the value in question
             object[f["tag"]] = int.from_bytes(value, byteorder="big") # decode value
@@ -55,7 +57,9 @@ class BinaryParser():
         data = bytearray()
         i = 0
         for item in object.values(): 
-            n_bytes = self.__n_bytes(format[i]["len"]) # call to a function to calculate number of bytes
+            if format[i]["type"] == "int" or format[i]["type"] == "uint":
+                n_bytes = self.__n_bytes(format[i]["len"]) # call to a function to calculate number of bytes
+            else: n_bytes = 4
             value = int(item).to_bytes(n_bytes, byteorder="big") # code value
             data += value # add binary data
             i += 1
@@ -67,12 +71,15 @@ class BinaryParser():
         if len <= 8: n = 1
         elif len <= 16: n =2
         else: n = 4
+        
         return n
 
     def __c_bytes(self, format):
         count = 0
         for f in format:
-            count += self.__n_bytes(f["len"])
+            if f["type"] == "int" or f["type"] == "uint":
+                count += self.__n_bytes(f["len"])
+            else: count += 4
         return count    
    
 
