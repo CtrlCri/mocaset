@@ -1,4 +1,5 @@
 from binascii import hexlify
+import struct
 
 class BinaryParser():
     def __init__(self) -> None:
@@ -29,12 +30,17 @@ class BinaryParser():
         object = {}
         i = 0
         for f in format:           
+            value = bytearray()
+            
             if f["type"] == "int" or f["type"] == "uint":
                 n_bytes = self.__n_bytes(f["len"]) # call to a function to calculate number of bytes
-            else: n_bytes = 4
-            value = bytearray()
-            value = trama[i:(i+n_bytes)] # takes the part of the frame that corresponds to the value in question
-            object[f["tag"]] = int.from_bytes(value, byteorder="big") # decode value
+                value = trama[i:(i+n_bytes)] # takes the part of the frame that corresponds to the value in question
+                object[f["tag"]] = int.from_bytes(value, byteorder="big") # decode value
+            elif f["type"] == "float": # different procedure if float 
+                value = trama[i:(i+4)] 
+                object[f["tag"]] = struct.unpack("f", value) # decode value
+                n_bytes = 4
+            
             i += n_bytes # move frame index           
 
         return object
@@ -59,8 +65,10 @@ class BinaryParser():
         for item in object.values(): 
             if format[i]["type"] == "int" or format[i]["type"] == "uint":
                 n_bytes = self.__n_bytes(format[i]["len"]) # call to a function to calculate number of bytes
-            else: n_bytes = 4
-            value = int(item).to_bytes(n_bytes, byteorder="big") # code value
+                value = int(item).to_bytes(n_bytes, byteorder="big") # code value
+            elif format[i]["type"] == "float": # different procedure if float 
+                n_bytes = 4
+                value = struct.pack("f", item) # code value
             data += value # add binary data
             i += 1
         self.buffer = data # add binary data to buffer
@@ -120,8 +128,8 @@ if __name__ == "__main__":
     bp = BinaryParser()
     
     #data, format = data_1, format_1 # example
-    #data, format = data_2, format_2 # example
-    data, format = other_data, other_format # other example
+    data, format = data_2, format_2 # example
+    #data, format = other_data, other_format # other example
 
 
     bp.encode(data, format)
