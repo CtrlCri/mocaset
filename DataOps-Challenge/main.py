@@ -1,7 +1,11 @@
+# Python
 from binascii import hexlify
 import struct
 
 class BinaryParser():
+    """
+    v0.1.0 | [autor: Cristian Aramayo] | Primera versión
+    """
     def __init__(self) -> None:
         self.buffer: bytearray
         self.size: int
@@ -31,17 +35,22 @@ class BinaryParser():
         i = 0
         for f in format:           
             value = bytearray()
-            
+            # depends on the data type, the number of bytes is granted
             if f["type"] == "int" or f["type"] == "uint":
                 n_bytes = self.__n_bytes(f["len"]) # call to a function to calculate number of bytes
                 value = trama[i:(i+n_bytes)] # takes the part of the frame that corresponds to the value in question
                 object[f["tag"]] = int.from_bytes(value, byteorder="big") # decode value
                 
             elif f["type"] == "float": # different procedure if float 
-                value = trama[i:(i+4)]               
-                object[f["tag"]] = struct.unpack("f", value) # decode value               
                 n_bytes = 4
-            
+                value = trama[i:(i+n_bytes)]               
+                object[f["tag"]] = struct.unpack("f", value) # decode value 
+
+            elif f["type"] == "char": # different procedure if char                  
+                n_bytes = 1
+                value = trama[i:(i+n_bytes)]               
+                object[f["tag"]] = value.decode("utf-8") # decode value 
+
             i += n_bytes # move frame index           
 
         return object
@@ -63,13 +72,20 @@ class BinaryParser():
         """ 
         data = bytearray()
         i = 0
-        for item in object.values(): 
+        for item in object.values():
+            # depends on the data type, the number of bytes is granted 
             if format[i]["type"] == "int" or format[i]["type"] == "uint":
                 n_bytes = self.__n_bytes(format[i]["len"]) # call to a function to calculate number of bytes
                 value = int(item).to_bytes(n_bytes, byteorder="big") # code value
+            
             elif format[i]["type"] == "float": # different procedure if float 
                 n_bytes = 4
                 value = struct.pack("f", item) # code value
+
+            elif format[i]["type"] == "char": # different procedure if char
+                n_bytes = 1
+                value = bytearray(item, "utf-8") # code value
+
             data += value # add binary data
             i += 1
         self.buffer = data # add binary data to buffer
@@ -77,6 +93,7 @@ class BinaryParser():
         self.size = count # add bit count to frame size
     
     def __n_bytes(self, len):
+        # only for data type int and uint
         if len <= 8: n = 1
         elif len <= 16: n =2
         else: n = 4
@@ -88,7 +105,11 @@ class BinaryParser():
         for f in format:
             if f["type"] == "int" or f["type"] == "uint":
                 count += self.__n_bytes(f["len"])
-            else: count += 4
+            elif f["type"] == "float":
+                count += 4
+            elif f["type"] == "char":
+                count += 1
+
         return count    
    
 
@@ -96,7 +117,7 @@ if __name__ == "__main__":
     # Ejemplos
     format_1 = [
         {"tag": "PTemp", "type": "int", "len": 12 },
-        {"tag": "BattVolt.value", "type": "int", "len": 12 },
+        {"tag": "BattVolt.value", "type": "int", "len": 8 },
         {"tag": "WaterLevel", "type": "int", "len": 8 }
     ]
     data_1 = { "PTemp": 268, "BattVolt.value": 224, "WaterLevel": 115 }
@@ -130,6 +151,13 @@ if __name__ == "__main__":
     data_3 = { "var0.Temp_C_2_Avg": 2.5, "var0.DOppm": 3.5, "var0.TurbNTU": 1.5,"var0.Lvl_corr_Avg": 2.5, 
     "var0.pH_Avg": 0.5, "var0.TimeStamp": 5.5,"var0.BattV_Avg": 4.5, "var0.BattV_Min": 3.5}
 
+    format_4 = [
+        {"tag": "Initial.LastName", "type": "char"},
+        {"tag": "Age", "type": "int", "len": 8},
+        {"tag": "salary", "type": "float"}
+    ]
+    data_4 = {"Initial.LastName": "A", "Age": 39, "Salary": 1411.9}
+
     other_data = { "V0": 1, "V1": 2, "V2": 3 }
     other_format = [
         { "tag": "V0", "type": "int", "len": 8 },
@@ -143,7 +171,9 @@ if __name__ == "__main__":
     
     #data, format = data_1, format_1 # example
     #data, format = data_2, format_2 # example
-    data, format = data_3, format_3 # example
+    #data, format = data_3, format_3 # example
+    data, format = data_4, format_4 # example mix
+
     #data, format = other_data, other_format # other example
 
 
