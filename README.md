@@ -30,91 +30,91 @@ Formato -> Es un array o vector de objetos, donde cada elemento corresponde a la
 
   
 ## Esqueleto de la clase (a modo orientativo, no hace falta POO):   
-1.	   /** ToDo */
-2.	    class BinaryParser {
-3.	        /**
-4.	        * ToDo
-5.	        * v0.1.0 | [autor] | Primera versión
-6.	        * 
-7.	        * @param {buffer} buffer -> Trama a deserializar
-8.	        * @param {*} format -> Formato de serialización (ver notas adjuntas)
-9.	        * @return {*} Objeto "composición" (trama deserializada en campos tag = valor)
-10.	        * @memberof BinaryParser
-11.	        * @version ?
-12.	        */
-13.	        decode(buffer, format) {
-14.	            let _object = {}
-15.	            // ToDo
-16.	            return _object
-17.	        }
-18.	 
-19.	        /**
-20.	        * ?
-21.	        * v0.1.0 | [autor] | Primera versión
-22.	        * 
-23.	        * @param {*} _object -> Objeto a frasear (serializar)
-24.	        * @param {*} format -> Formato de serialización (ver notas adjuntas)
-25.	        * @return {*} size -> tamaño en bits de la trama. buffer -> Node.js Buffer.
-26.	        * @memberof BinaryParser
-27.	        * @version ?
-28.	        */
-29.	        encode(_object, format) {
-30.	            const buffer = Buffer.alloc(?);
-31.	            // ToDo
-32.	            return { size, buffer };
-33.	        }
-34.	    } 
+	   /** ToDo */
+	    class BinaryParser {
+	        /**
+	        * ToDo
+	        * v0.1.0 | [autor] | Primera versión
+	        * 
+	        * @param {buffer} buffer -> Trama a deserializar
+	        * @param {*} format -> Formato de serialización (ver notas adjuntas)
+	        * @return {*} Objeto "composición" (trama deserializada en campos tag = valor)
+	        * @memberof BinaryParser
+	        * @version ?
+	        */
+	        decode(buffer, format) {
+	            let _object = {}
+	            // ToDo
+	            return _object
+	        }
+	 
+	        /**
+	        * ?
+	        * v0.1.0 | [autor] | Primera versión
+	        * 
+	        * @param {*} _object -> Objeto a frasear (serializar)
+	        * @param {*} format -> Formato de serialización (ver notas adjuntas)
+	        * @return {*} size -> tamaño en bits de la trama. buffer -> Node.js Buffer.
+	        * @memberof BinaryParser
+	        * @version ?
+	        */
+	        encode(_object, format) {
+	            const buffer = Buffer.alloc(?);
+	            // ToDo
+	            return { size, buffer };
+	        }
+	    } 
 
 ## Ejemplo
-1.		const format1 = [
-2.			{ tag: "PTemp", type: "int", len: 12 },
-3.			{ tag: "BattVolt.value", type: "int", len: 12 },
-4.			{ tag: "WaterLevel", type: "int", len: 8 },
-5.		]; 
-6.			
-7.		var data = { PTemp: 268, BattVolt.value: 224, WaterLevel: 115 }; 
-8.	 
-9.		var bp = new BinaryParser();
-10.		var dataEncoded = bp.encode(data, format1); 
-11.		console.log(dataEncoded.buffer.toString('hex')); //prints 10C0E073
-12.	  console.log(dataEncoded.size); //prints 32
-13.	  var dataDecoded = bp.decode(dataEncoded.buffer, format1);
-14.		console.log(dataDecoded) //prints { PTemp: 268, ‘BattVolt.value’: 224, WaterLevel: 115 }
-15.	 
+		const format1 = [
+			{ tag: "PTemp", type: "int", len: 12 },
+			{ tag: "BattVolt.value", type: "int", len: 12 },
+			{ tag: "WaterLevel", type: "int", len: 8 },
+		]; 
+			
+		var data = { PTemp: 268, BattVolt.value: 224, WaterLevel: 115 }; 
+	 
+		var bp = new BinaryParser();
+		var dataEncoded = bp.encode(data, format1); 
+		console.log(dataEncoded.buffer.toString('hex')); //prints 10C0E073
+	  console.log(dataEncoded.size); //prints 32
+	  var dataDecoded = bp.decode(dataEncoded.buffer, format1);
+		console.log(dataDecoded) //prints { PTemp: 268, ‘BattVolt.value’: 224, WaterLevel: 115 }
+	 
 
 ## Otros ejemplos de Formatos
-1.	    const format2 = [
-2.	        { tag: "var0.value", type: "uint", len: 2 },
-3.	        { tag: "var1.value", type: "uint", len: 2 },
-4.	        { tag: "var2.value", type: "uint", len: 7 },
-5.	        { tag: "var3.value", type: "uint", len: 11 },
-6.	        { tag: "var4.value", type: "int", len: 10 },
-7.	        { tag: "var5.value", type: "uint", len: 16 },
-8.	        { tag: "var6.value", type: "float" },
-9.	        { tag: "var7.value", type: "uint", len: 16 },
-10.	        { tag: "var8.value", type: "uint", len: 32 },
-11.	        { tag: "var9.value", type: "uint", len: 8 },
-12.	    ]; 
-1.	    const format3 = [
-2.	        { tag: "var0.Temp_C_2_Avg", type: "float" },
-3.	        { tag: "var0.DOppm", type: "float" },
-4.	        { tag: "var0.TurbNTU", type: "float" },
-5.	        { tag: "var0.Lvl_corr_Avg", type: "float" },
-6.	        { tag: "var0.Cond_Avg", type: "float" },
-7.	        { tag: "var0.pH_Avg", type: "float" },
-8.	        { tag: "var0.TimeStamp", type: "float" },
-9.	        { tag: "var0.BattV_Avg", type: "float" },
-10.	        { tag: "var0.BattV_Min", type: "float" },
-11.	        { tag: "var1.Temp_C_2_Avg", type: "float" },
-12.	        { tag: "var1.DOppm", type: "float" },
-13.	        { tag: "var1.TurbNTU", type: "float" },
-14.	        { tag: "var1.Lvl_corr_Avg", type: "float" },
-15.	        { tag: "var1.Cond_Avg", type: "float" },
-16.	        { tag: "var1.pH_Avg", type: "float" },
-17.	        { tag: "var1.TimeStamp", type: "float" },
-18.	        { tag: "var1.BattV_Avg", type: "float" },
-19.	        { tag: "var1.BattV_Min", type: "float" },
-20.	    ]; 
+	    const format2 = [
+	        { tag: "var0.value", type: "uint", len: 2 },
+	        { tag: "var1.value", type: "uint", len: 2 },
+	        { tag: "var2.value", type: "uint", len: 7 },
+	        { tag: "var3.value", type: "uint", len: 11 },
+	        { tag: "var4.value", type: "int", len: 10 },
+	        { tag: "var5.value", type: "uint", len: 16 },
+	        { tag: "var6.value", type: "float" },
+	        { tag: "var7.value", type: "uint", len: 16 },
+	        { tag: "var8.value", type: "uint", len: 32 },
+	        { tag: "var9.value", type: "uint", len: 8 },
+	    ]; 
+	    const format3 = [
+	        { tag: "var0.Temp_C_2_Avg", type: "float" },
+	        { tag: "var0.DOppm", type: "float" },
+	        { tag: "var0.TurbNTU", type: "float" },
+	        { tag: "var0.Lvl_corr_Avg", type: "float" },
+	        { tag: "var0.Cond_Avg", type: "float" },
+	        { tag: "var0.pH_Avg", type: "float" },
+	        { tag: "var0.TimeStamp", type: "float" },
+	        { tag: "var0.BattV_Avg", type: "float" },
+	        { tag: "var0.BattV_Min", type: "float" },
+	        { tag: "var1.Temp_C_2_Avg", type: "float" },
+	        { tag: "var1.DOppm", type: "float" },
+	        { tag: "var1.TurbNTU", type: "float" },
+	        { tag: "var1.Lvl_corr_Avg", type: "float" },
+	        { tag: "var1.Cond_Avg", type: "float" },
+	        { tag: "var1.pH_Avg", type: "float" },
+	        { tag: "var1.TimeStamp", type: "float" },
+	        { tag: "var1.BattV_Avg", type: "float" },
+	        { tag: "var1.BattV_Min", type: "float" },
+	    ]; 
     
 ## Otro Ejemplo de deserialización
 
