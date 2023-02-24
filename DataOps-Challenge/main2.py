@@ -1,120 +1,93 @@
 import struct
-from binascii import hexlify
 
 class BinaryParser:
-    """
-    Clase para codificar y decodificar estructuras de datos en tramas binarias
-    según un formato definido.
-
-    Atributos:
-    ----------
-    endian: str
-        Orden de bytes utilizado en la codificación/decodificación de los datos. 
-        Puede ser 'little' (poco endian) o 'big' (gran endian). Por defecto es 'big'.
-
-    Métodos:
-    --------
-    encode(data, format)
-        Codifica los datos de un objeto de acuerdo al formato especificado.
-
-    decode(buffer, format)
-        Decodifica los datos de una trama binaria de acuerdo al formato especificado.
-    """
-
-    def __init__(self, endian='big'):
-        """
-        Constructor de la clase BinaryParser.
-
-        Parámetros:
-        -----------
-        endian: str, opcional
-            Orden de bytes utilizado en la codificación/decodificación de los datos. 
-            Puede ser 'little' (poco endian) o 'big' (gran endian). Por defecto es 'big'.
-        """
-        self.endian = endian
-
-def encode(self, _object, format):
-    """
-    Codifica un objeto _object de acuerdo al formato especificado.
-
-    Parámetros:
-    _object (dict): Objeto a codificar.
-    format (list): Formato de codificación.
-
-    Retorna:
-    dict: Tamaño en bits de la trama y la trama binaria codificada.
-
-    Raises:
-    TypeError: Si algún tipo de dato del objeto a codificar no coincide con el formato especificado.
-
-    """
-
-    # Inicializar el tamaño de la trama en bits y la trama binaria
-    size = 0
-    buffer = bytearray()
-
-    # Codificar cada campo del objeto según el formato
-    for field in format:
-        tag = field['tag']
-        data_type = field['type']
-        data_len = field['len']
-
-        # Verificar si el campo existe en el objeto
-        if tag not in _object:
-            raise TypeError(f"El campo {tag} no existe en el objeto a codificar.")
-
-        # Obtener el valor del campo
-        value = _object[tag]
-
-        # Verificar el tipo de dato del campo
-        if data_type == 'uint':
-            # Codificar un entero sin signo de longitud variable
-            encoded_value, value_size = self.encode_uint(value, data_len)
-        elif data_type == 'int':
-            # Codificar un entero con signo de longitud variable
-            encoded_value, value_size = self.encode_int(value, data_len)
-        elif data_type == 'float':
-            # Codificar un punto flotante de precisión simple
-            encoded_value, value_size = self.encode_float(value)
-        elif data_type == 'ascii':
-            # Codificar una cadena ASCII terminada en #0
-            encoded_value, value_size = self.encode_ascii(value)
-        else:
-            raise TypeError(f"Tipo de dato no soportado: {data_type}")
-
-        # Agregar el valor codificado a la trama binaria
-        buffer += encoded_value
-
-        # Actualizar el tamaño de la trama en bits
-        size += value_size
-
-    # Retornar el tamaño de la trama en bits y la trama binaria codificada
-    return {'size': size, 'buffer': bytes(buffer)}
-
-
-if __name__ == "__main__":
-    # Definir formato de la trama
+    def decode(self, buffer, format):
+        obj = {}
+        offset = 0
+        for field in format:
+            field_type = field['type']
+            field_len = field.get('len')
+            if field_type == 'uint':
+                if field_len:
+                    uint_format = f'>u{field_len//8}'
+                else:
+                    uint_format = '>I'
+                field_value = struct.unpack_from(uint_format, buffer, offset)[0]
+                offset += field_len//8 if field_len else 4
+            elif field_type == 'int':
+                if field_len:
+                    int_format = f'>i{field_len//8}'
+                else:
+                    int_format = '>i'
+                field_value = struct.unpack_from(int_format, buffer, offset)[0]
+                offset += field_len//8 if field_len else 4
+            elif field_type == 'float':
+                field_value = struct.unpack_from('>f', buffer, offset)[0]
+                offset += 4
+            elif field_type == 'ascii':
+                field_value = buffer[offset:].split(b'\x00')[0].decode('ascii')
+                offset += len(field_value.encode('ascii')) + 1
+            else:
+                raise ValueError(f'Invalid field type: {field_type}')
+            obj[field['tag']] = field_value
+        return obj
+    
+    def encode(self, obj, format):
+        size = 0
+        buffer = b''
+        for field in format:
+            field_tag = field['tag']
+            field_type = field['type']
+            field_len = field.get('len')
+            if field_tag not in obj:
+                raise ValueError(f'Missing field: {field_tag}')
+            field_value = obj[field_tag]
+            if field_type == 'uint':
+                if field_len:
+                    uint_format = f'>u{field_len//8}'
+                    packed_value = struct.pack(uint_format, field_value)
+                    size += field_len//8
+                else:
+                    packed_value = struct.pack('>I', field_value)
+                    size += 4
+            elif field_type == 'int':
+                if field_len:
+                    int_format = f'>i{field_len//8}'
+                    packed_value = struct.pack(int_format, field_value)
+                    size += field_len//8
+                else:
+                    packed_value = struct.pack('>i', field_value)
+                    size += 4
+            elif field_type == 'float':
+                packed_value = struct.pack('>f', field_value)
+                size += 4
+            elif field_type == 'ascii':
+                ascii_value = field_value.encode('ascii')
+                packed_value = ascii_value + b'\x00'*(field_len-len(ascii_value)) if field_len else ascii_value + b'\x00'
+                size += len(packed_value)*8
+            else:
+                raise ValueError(f'Invalid field type: {field_type}')
+            buffer += packed_value
+        return {'size': size, 'buffer': buffer}
+    
+if __name__ == '__main__':
+    # Define el formato para codificar/decodificar los datos
     format1 = [
-        { "tag": "PTemp", "type": "int", "len": 12 },
-        { "tag": "BattVolt.value", "type": "int", "len": 12 },
-        { "tag": "WaterLevel", "type": "int", "len": 8 },
+        {'tag': 'PTemp', 'type': 'int', 'len': 12},
+        {'tag': 'BattVolt.value', 'type': 'int', 'len': 12},
+        {'tag': 'WaterLevel', 'type': 'int', 'len': 8},
     ]
-    
-    # Definir datos a serializar
-    data = { "PTemp": 268, "BattVolt.value": 224, "WaterLevel": 115 }
-    
-    # Instanciar objeto BinaryParser
+
+    # Define los datos a ser codificados/decodificados
+    data = {'PTemp': 268, 'BattVolt.value': 224, 'WaterLevel': 115}
+
+    # Crea una instancia de la clase BinaryParser
     bp = BinaryParser()
-    
-    # Codificar datos en formato binario
-    data_encoded = bp.encode(data, format1)
-    
-    # Imprimir resultado
-    print("Trama codificada:", data_encoded["buffer"].hex())
-    print("Tamaño en bits:", data_encoded["size"])
-    
-    # Decodificar trama binaria
-    data_decoded = bp.decode(data_encoded["buffer"], format1)
-    
-    # Imprimir resultado
-    print("Datos decodificados:", data_decoded)
+
+    # Codifica los datos
+    encoded_data = bp.encode(data, format1)
+    print('Encoded data:', encoded_data)
+
+    # Decodifica los datos
+    decoded_data = bp.decode(encoded_data, format1)
+    print('Decoded data:', decoded_data)
